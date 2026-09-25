@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CreativeRecruit</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1c2430; --paper:#f3f1ea; --card:#ffffff; --line:#e1ddd0;
+  --moss:#2f5d4f; --moss-d:#1f4238; --amber:#d98a3d; --amber-d:#b06f2c;
+  --muted:#6b6459; --danger:#b0483f;
+  --glass-bg: rgba(255,255,255,.55); --glass-bg-strong: rgba(255,255,255,.72);
+  --glass-border: rgba(255,255,255,.6); --glass-hl: rgba(255,255,255,.85);
+  --shadow-sm: 0 1px 2px rgba(20,20,15,.04), 0 2px 8px rgba(20,20,15,.04);
+  --shadow-md: 0 8px 24px rgba(20,20,15,.08), 0 2px 6px rgba(20,20,15,.05);
+  --shadow-lg: 0 20px 50px rgba(20,20,15,.14), 0 4px 14px rgba(20,20,15,.06);
+  --r-sm:11px; --r-btn:13px; --r-card:20px; --r-panel:24px; --r-nav:20px;
+  --ease: cubic-bezier(.25,.8,.35,1); --t-fast:180ms; --t:260ms;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#eee9df; --paper:#12140f; --card:#1b1e18; --line:#31362b; --muted:#9a9484;
+    --glass-bg: rgba(32,36,29,.55); --glass-bg-strong: rgba(32,36,29,.72);
+    --glass-border: rgba(255,255,255,.08); --glass-hl: rgba(255,255,255,.06);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#eee9df; --paper:#12140f; --card:#1b1e18; --line:#31362b; --muted:#9a9484;
+  --glass-bg: rgba(32,36,29,.55); --glass-bg-strong: rgba(32,36,29,.72);
+  --glass-border: rgba(255,255,255,.08); --glass-hl: rgba(255,255,255,.06);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;min-height:100%;-webkit-font-smoothing:antialiased;position:relative}
+
+/* ---------- ambient background ---------- */
+.bg-decor{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bg-decor span{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;will-change:transform}
+.bg-decor .b1{width:520px;height:520px;top:-160px;left:-120px;background:radial-gradient(circle,var(--moss),transparent 70%);animation:float1 26s ease-in-out infinite}
+.bg-decor .b2{width:460px;height:460px;top:10%;right:-160px;background:radial-gradient(circle,var(--amber),transparent 70%);opacity:.22;animation:float2 30s ease-in-out infinite}
+.bg-decor .b3{width:420px;height:420px;bottom:-180px;left:20%;background:radial-gradient(circle,var(--moss),transparent 70%);opacity:.18;animation:float3 34s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,60px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,40px)}}
+@keyframes float3{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-40px)}}
+@media(max-width:700px){.bg-decor span{filter:blur(60px)}}
+
+h1,h2,h3{font-family:'Fraunces',serif;font-weight:700;margin:0 0 .3em;letter-spacing:-.01em}
+
+/* ---------- floating glass nav ---------- */
+header.top{
+  position:sticky;top:12px;z-index:20;margin:12px auto 0;max-width:1040px;width:calc(100% - 24px);
+  background:var(--glass-bg);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid var(--glass-border);box-shadow:var(--shadow-md);
+  border-radius:var(--r-nav);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  transition:box-shadow var(--t) var(--ease);
+}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand h1{font-size:1.28rem}
+.brand span{color:var(--moss);font-family:'Inter',sans-serif;font-weight:600;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;opacity:.85}
+.headerRight{display:flex;align-items:center;gap:10px}
+
+/* segmented control */
+.tabs{position:relative;display:flex;gap:2px;background:rgba(120,120,105,.1);border:1px solid var(--glass-border);border-radius:var(--r-sm);padding:3px}
+.tabs button{position:relative;z-index:2;border:none;background:transparent;padding:8px 16px;border-radius:9px;font:inherit;font-weight:600;font-size:.82rem;color:var(--muted);cursor:pointer;transition:color var(--t-fast) var(--ease)}
+.tabs button.active{color:#fff}
+.tabs::before{content:"";position:absolute;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 6px);background:linear-gradient(155deg,var(--moss),var(--moss-d));border-radius:9px;box-shadow:0 3px 10px rgba(47,93,79,.35);transition:transform var(--t) var(--ease);z-index:1}
+.tabs:has(button[data-role="coordinator"].active)::before{transform:translateX(100%)}
+
+.bellWrap{position:relative}
+.bellBtn{background:rgba(120,120,105,.1);border:1px solid var(--glass-border);border-radius:11px;width:38px;height:38px;cursor:pointer;font-size:1.02rem;position:relative;transition:transform var(--t-fast) var(--ease),background var(--t-fast) var(--ease)}
+.bellBtn:hover{background:rgba(120,120,105,.18);transform:translateY(-1px)}
+.bellBtn:active{transform:scale(.94)}
+.bellDot{position:absolute;top:5px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--amber);display:none;box-shadow:0 0 0 2px var(--card)}
+.bellPanel{position:absolute;right:0;top:48px;width:300px;background:var(--glass-bg-strong);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid var(--glass-border);border-radius:18px;box-shadow:var(--shadow-lg);padding:12px;display:none;max-height:360px;overflow-y:auto;z-index:30;transform-origin:top right;opacity:0;transform:scale(.94) translateY(-6px);transition:opacity var(--t) var(--ease),transform var(--t) var(--ease)}
+.bellPanel.active{display:block;opacity:1;transform:scale(1) translateY(0)}
+.bellPanel h4{margin:2px 6px 8px;font-size:.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-family:'Inter',sans-serif;font-weight:700}
+.notif{padding:10px 8px;border-bottom:1px solid var(--line);font-size:.83rem;line-height:1.4}
+.notif:last-child{border-bottom:none}
+.notif .t{color:var(--muted);font-size:.72rem;margin-top:3px}
+
+main{max-width:1040px;margin:0 auto;padding:28px 20px 70px}
+.view{display:none;animation:viewIn .4s var(--ease)}
+.view.active{display:block}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* hero */
+.hero{padding:22px 4px 8px}
+.hero h2{font-size:2.2rem;line-height:1.08;margin-bottom:.18em;background:linear-gradient(155deg,var(--ink),var(--moss-d));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:1rem;margin:0;max-width:520px}
+
+/* glass toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:18px;padding:12px;box-shadow:var(--shadow-sm)}
+.toolbar input[type=text]{flex:1;min-width:160px}
+
+.club-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:18px}
+.card{background:var(--glass-bg-strong);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid var(--glass-border);border-radius:var(--r-card);padding:20px;box-shadow:var(--shadow-sm);transition:transform var(--t) var(--ease),box-shadow var(--t) var(--ease),border-color var(--t) var(--ease)}
+.club-card{cursor:pointer;position:relative}
+.club-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:color-mix(in srgb, var(--moss) 30%, var(--glass-border))}
+.club-card h3{font-size:1.12rem;margin-bottom:.15em}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;color:var(--moss-d);background:color-mix(in srgb, var(--moss) 14%, transparent);padding:4px 10px;border-radius:99px;margin-bottom:9px;letter-spacing:.01em}
+.club-card p{color:var(--muted);font-size:.9rem;line-height:1.55;margin:.4em 0}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--muted);margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.deadline{font-weight:600}
+.deadline::before{content:"◷ ";opacity:.7}
+.deadline.urgent{color:var(--danger)}
+
+/* category accents */
+.tag.cat-technical{color:#3448b3;background:rgba(65,89,220,.14)}
+.tag.cat-creative{color:#b3427a;background:rgba(214,80,150,.14)}
+.tag.cat-cultural{color:#7a3fb0;background:rgba(150,80,214,.14)}
+.tag.cat-sports{color:#1f7d4a;background:rgba(40,170,100,.14)}
+.tag.cat-entrepreneurship{color:#a56a15;background:rgba(217,138,61,.16)}
+
+/* ---------- buttons ---------- */
+button.primary{background:linear-gradient(155deg,var(--amber),var(--amber-d));color:#fff;border:none;border-radius:var(--r-btn);padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;font-size:.85rem;box-shadow:0 2px 8px rgba(217,138,61,.35),inset 0 1px 0 rgba(255,255,255,.25);transition:transform var(--t-fast) var(--ease),box-shadow var(--t-fast) var(--ease),filter var(--t-fast) var(--ease)}
+button.primary:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 6px 16px rgba(217,138,61,.4),inset 0 1px 0 rgba(255,255,255,.25)}
+button.primary:active{transform:translateY(0) scale(.97)}
+button.ghost{background:var(--glass-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-radius:var(--r-btn);padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;color:var(--ink);font-size:.85rem;transition:transform var(--t-fast) var(--ease),background var(--t-fast) var(--ease)}
+button.ghost:hover{background:rgba(120,120,105,.14);transform:translateY(-1px)}
+button.ghost:active{transform:translateY(0) scale(.97)}
+button.small{padding:6px 12px;font-size:.78rem;border-radius:10px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb, var(--moss) 35%, transparent)}
+
+input,select,textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--glass-bg);color:var(--ink);width:100%;transition:border-color var(--t-fast) var(--ease),box-shadow var(--t-fast) var(--ease),background var(--t-fast) var(--ease)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--moss);background:var(--card);box-shadow:0 0 0 4px color-mix(in srgb, var(--moss) 16%, transparent)}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.8}
+
+.status-pill{font-size:.74rem;font-weight:700;padding:4px 11px;border-radius:99px;text-transform:capitalize;letter-spacing:.01em}
+.status-pending{background:#f1e3c6;color:#8a6a1f}
+.status-shortlisted{background:#d7e8dd;color:var(--moss-d)}
+.status-rejected{background:#f2dcd8;color:var(--danger)}
+.status-accepted{background:#cfead9;color:#1a6b3f}
+@media (prefers-color-scheme: dark){
+  .status-pending{background:rgba(241,227,198,.16);color:#e7c778}
+  .status-shortlisted{background:rgba(215,232,221,.14);color:#8fd6ad}
+  .status-rejected{background:rgba(242,220,216,.14);color:#e5978c}
+  .status-accepted{background:rgba(207,234,217,.16);color:#7fe0a6}
+}
+
+.app-list{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.app-row{background:var(--glass-bg-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--shadow-sm);transition:transform var(--t-fast) var(--ease),box-shadow var(--t-fast) var(--ease)}
+.app-row:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+
+/* ---------- modals ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(15,17,12,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-bg.active{display:flex;animation:overlayIn var(--t) var(--ease)}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--glass-bg-strong);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);border:1px solid var(--glass-border);box-shadow:var(--shadow-lg);border-radius:var(--r-panel);padding:26px;max-width:460px;width:100%;max-height:85vh;overflow-y:auto;animation:modalIn var(--t) var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.8rem;font-weight:600;margin-bottom:6px;color:var(--muted)}
+.empty{color:var(--muted);padding:44px 20px;text-align:center;font-size:.92rem;background:var(--glass-bg);border:1px dashed var(--glass-border);border-radius:var(--r-card)}
+.empty::before{content:"✦";display:block;font-size:1.3rem;color:var(--amber);margin-bottom:8px}
+.badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+select.chip{width:auto}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-top:30px;flex-wrap:wrap;gap:10px}
+.section-title h2{font-size:1.08rem}
+.coord-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.whoami{font-size:.8rem;color:var(--muted)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-top:16px}
+.stat{background:var(--glass-bg-strong);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--glass-border);border-radius:var(--r-card);padding:16px 18px;box-shadow:var(--shadow-sm);transition:transform var(--t-fast) var(--ease)}
+.stat:hover{transform:translateY(-2px)}
+.stat .num{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:700;line-height:1;color:var(--moss-d)}
+.stat .lbl{font-size:.78rem;color:var(--muted);margin-top:5px}
+.rec-strip{display:flex;gap:14px;overflow-x:auto;margin-top:14px;padding-bottom:8px;scroll-snap-type:x proximity}
+.rec-card{min-width:230px;scroll-snap-align:start;background:var(--glass-bg-strong);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid color-mix(in srgb, var(--moss) 35%, var(--glass-border));border-radius:var(--r-card);padding:16px;box-shadow:var(--shadow-sm);transition:transform var(--t-fast) var(--ease)}
+.rec-card:hover{transform:translateY(-3px)}
+.detail-block{margin:14px 0}
+.detail-block h4{font-size:.78rem;color:var(--muted);margin:0 0 4px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+
+/* ---------- login ---------- */
+.login-screen{position:fixed;inset:0;background:var(--paper);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+.login-card{max-width:400px;width:100%;background:var(--glass-bg-strong);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);border:1px solid var(--glass-border);box-shadow:var(--shadow-lg);border-radius:var(--r-panel);padding:38px 34px;animation:modalIn .5s var(--ease);position:relative;z-index:1}
+.login-card h2{font-size:1.75rem}
+.role-pick{display:flex;gap:10px;margin:18px 0}
+.role-pick button{flex:1;padding:14px;border-radius:var(--r-btn);border:1px solid var(--line);background:var(--glass-bg);font:inherit;font-weight:600;cursor:pointer;color:var(--ink);transition:all var(--t-fast) var(--ease)}
+.role-pick button:hover{transform:translateY(-1px)}
+.role-pick button.selected{border-color:var(--moss);background:color-mix(in srgb, var(--moss) 14%, var(--paper));color:var(--moss-d);box-shadow:0 0 0 3px color-mix(in srgb, var(--moss) 14%, transparent)}
+
+@media(max-width:600px){
+  .tabs{width:100%;justify-content:space-between}
+  .tabs button{flex:1}
+  header.top{border-radius:18px;top:8px}
+  .hero h2{font-size:1.7rem}
+  .login-card{padding:28px 22px}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  .bg-decor span{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-decor" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <h2>Welcome to CreativeRecruit</h2>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:0">One place for every club's recruitment drive on campus.</p>
+    <div class="field"><label>Your name</label><input type="text" id="loginName" placeholder="e.g. Sanika Deshmukh"></div>
+    <label style="font-size:.8rem;font-weight:600;color:var(--muted)">Continue as</label>
+    <div class="role-pick">
+      <button type="button" data-role="student" class="selected">Student</button>
+      <button type="button" data-role="coordinator">Coordinator</button>
+    </div>
+    <button class="primary" id="loginBtn" style="width:100%;padding:12px">Enter CreativeRecruit</button>
+  </div>
+</div>
+
+<header class="top">
+  <div class="brand"><h1>CreativeRecruit</h1><span>MMCOE Campus Clubs</span></div>
+  <div class="headerRight">
+    <div class="tabs" id="roleTabs">
+      <button data-role="student" class="active">Student</button>
+      <button data-role="coordinator">Coordinator</button>
+    </div>
+    <div class="bellWrap">
+      <button class="bellBtn" id="bellBtn">🔔<span class="bellDot" id="bellDot"></span></button>
+      <div class="bellPanel" id="bellPanel"><h4>Activity</h4><div id="bellList"></div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- STUDENT VIEW -->
+  <div class="view active" id="view-student">
+    <div class="hero">
+      <h2>Find where you belong.</h2>
+      <p>Explore recruitment drives across MMCOE's clubs, and apply in a couple of clicks.</p>
+    </div>
+    <div class="toolbar" style="margin-top:6px">
+      <input type="text" id="studentName" placeholder="Your name (for applications)" style="max-width:220px">
+      <input type="text" id="studentSkills" placeholder="Your skills (comma separated)" style="max-width:240px">
+      <input type="text" id="searchClubs" placeholder="Search clubs by name or skill…">
+      <select id="filterCategory" class="chip"><option value="">All categories</option></select>
+    </div>
+
+    <div id="recSection" style="display:none">
+      <div class="section-title"><h2 style="font-size:1.05rem">Recommended for you</h2></div>
+      <div class="rec-strip" id="recStrip"></div>
+    </div>
+
+    <div class="section-title"><h2 style="font-size:1.1rem">Open Recruitments</h2></div>
+    <div class="club-grid" id="clubGrid"></div>
+
+    <div class="section-title"><h2 style="font-size:1.1rem">My Applications</h2></div>
+    <div class="app-list" id="myApps"></div>
+  </div>
+
+  <!-- COORDINATOR VIEW -->
+  <div class="view" id="view-coordinator">
+    <div class="hero" style="padding-top:6px;padding-bottom:0">
+      <h2 style="font-size:1.7rem">Your recruitment overview</h2>
+      <p>Track drives and applicants across your club, all in one place.</p>
+    </div>
+    <div class="coord-header" style="margin-top:16px">
+      <div class="whoami">Managing as: <strong id="coordClubLabel">—</strong></div>
+      <div style="display:flex;gap:8px">
+        <select id="coordClubSelect" style="width:auto;min-width:180px"></select>
+        <button class="primary" id="newDriveBtn">+ New recruitment drive</button>
+      </div>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="section-title"><h2 style="font-size:1.1rem">Active Drives</h2></div>
+    <div class="app-list" id="coordDrives"></div>
+
+    <div class="section-title"><h2 style="font-size:1.1rem">Applicants</h2></div>
+    <div class="app-list" id="coordApplicants"></div>
+  </div>
+</main>
+
+<!-- Club Detail Modal -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal" id="detailModalBody"></div>
+</div>
+
+<!-- Apply Modal -->
+<div class="modal-bg" id="applyModal">
+  <div class="modal">
+    <h3 id="applyModalTitle">Apply</h3>
+    <div class="field"><label>Why do you want to join?</label><textarea id="applyMsg" rows="3" placeholder="A couple of sentences…"></textarea></div>
+    <div class="field"><label>Relevant skills</label><input type="text" id="applySkills" placeholder="e.g. Photoshop, Public speaking"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="ghost" onclick="closeModal('applyModal')">Cancel</button>
+      <button class="primary" id="submitApplyBtn">Submit application</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Drive Modal -->
+<div class="modal-bg" id="driveModal">
+  <div class="modal">
+    <h3>New recruitment drive</h3>
+    <div class="field"><label>Club name</label><input type="text" id="driveClub"></div>
+    <div class="field"><label>Category</label><input type="text" id="driveCategory" placeholder="e.g. Technical, Cultural, Sports"></div>
+    <div class="field"><label>Role / position</label><input type="text" id="driveRole" placeholder="e.g. Content Team Member"></div>
+    <div class="field"><label>Description</label><textarea id="driveDesc" rows="3"></textarea></div>
+    <div class="field"><label>Eligibility</label><input type="text" id="driveEligibility" placeholder="e.g. Open to all years"></div>
+    <div class="field"><label>Selection rounds</label><input type="text" id="driveRounds" placeholder="e.g. Portfolio review, Interview"></div>
+    <div class="field"><label>Skills wanted (comma separated)</label><input type="text" id="driveSkills" placeholder="Design, Writing"></div>
+    <div class="field"><label>Coordinator contact</label><input type="text" id="driveContact" placeholder="name@mmcoe.edu.in"></div>
+    <div class="field"><label>Application deadline</label><input type="date" id="driveDeadline"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="ghost" onclick="closeModal('driveModal')">Cancel</button>
+      <button class="primary" id="saveDriveBtn">Post drive</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY='cr_data_v2';
+function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){ return null; } }
+function seed(){
+  return {
+    drives:[
+      {id:'d1',club:'Photography Club',category:'Creative',role:'Event Photographer',desc:'Cover club events and campus fests, build the club\'s visual archive.',eligibility:'Open to all years',rounds:'Portfolio review, Short interview',contact:'photoclub@mmcoe.edu.in',skills:['Photography','Photo editing'],deadline:'2026-09-29'},
+      {id:'d2',club:'Coding Club',category:'Technical',role:'Web Dev Volunteer',desc:'Help build and maintain club microsites and hackathon tools.',eligibility:'SY and above',rounds:'Take-home task, Technical interview',contact:'codingclub@mmcoe.edu.in',skills:['HTML/CSS','JavaScript'],deadline:'2026-09-27'},
+      {id:'d3',club:'Dramatics Society',category:'Cultural',role:'Stage Performer',desc:'Auditioning for the annual production — no experience required.',eligibility:'Open to all years',rounds:'Open audition',contact:'dramatics@mmcoe.edu.in',skills:['Acting','Confidence on stage'],deadline:'2026-10-20'},
+      {id:'d4',club:'Entrepreneurship Cell',category:'Technical',role:'Content & Outreach',desc:'Write pitch decks and manage outreach for campus startup events.',eligibility:'Open to all years',rounds:'Writing sample, Interview',contact:'ecell@mmcoe.edu.in',skills:['Writing','Communication'],deadline:'2026-10-12'},
+      {id:'d5',club:'Coding Club',category:'Technical',role:'App Dev Volunteer',desc:'Prototype the club\'s companion app for event check-ins.',eligibility:'TY and above',rounds:'Take-home task, Technical interview',contact:'codingclub@mmcoe.edu.in',skills:['Flutter','Firebase'],deadline:'2026-10-18'},
+      {id:'d6',club:'Music Club',category:'Cultural',role:'Vocalist / Instrumentalist',desc:'Perform at campus fests and represent MMCOE at inter-college fests.',eligibility:'Open to all years',rounds:'Live audition',contact:'musicclub@mmcoe.edu.in',skills:['Singing','Any instrument'],deadline:'2026-10-25'}
+    ],
+    applications:[
+      {id:'a1',driveId:'d1',club:'Photography Club',role:'Event Photographer',student:'Sanika Deshmukh',message:'I shoot for my Instagram page and want to cover bigger campus events.',skills:'DSLR, Lightroom',status:'shortlisted',appliedOn:'2026-09-18'},
+      {id:'a2',driveId:'d1',club:'Photography Club',role:'Event Photographer',student:'Om Kulkarni',message:'Shot last year\'s tech fest as a volunteer, would love to join officially.',skills:'Photography, Drone shots',status:'pending',appliedOn:'2026-09-20'},
+      {id:'a3',driveId:'d2',club:'Coding Club',role:'Web Dev Volunteer',student:'Aditi Rane',message:'Built two React projects, happy to help maintain club sites.',skills:'React, JavaScript',status:'accepted',appliedOn:'2026-09-15'},
+      {id:'a4',driveId:'d2',club:'Coding Club',role:'Web Dev Volunteer',student:'Rohan Bhosale',message:'Currently learning Node, want hands-on experience.',skills:'HTML, CSS, Node basics',status:'pending',appliedOn:'2026-09-22'},
+      {id:'a5',driveId:'d3',club:'Dramatics Society',role:'Stage Performer',student:'Ishaan Pillai',message:'Been part of my school drama club for 3 years.',skills:'Acting, Mimicry',status:'rejected',appliedOn:'2026-09-10'},
+      {id:'a6',driveId:'d4',club:'Entrepreneurship Cell',role:'Content & Outreach',student:'Meera Joshi',message:'Run a small Instagram page on campus startups already.',skills:'Copywriting, Canva',status:'shortlisted',appliedOn:'2026-09-19'},
+      {id:'a7',driveId:'d6',club:'Music Club',role:'Vocalist / Instrumentalist',student:'Kabir Singh',message:'Play the guitar, performed at last year\'s cultural night.',skills:'Guitar, Vocals',status:'pending',appliedOn:'2026-09-23'}
+    ],
+    notifications:[
+      {msg:'Your application to Photography Club was shortlisted.',time:'2 days ago'},
+      {msg:'Your application to Coding Club (Web Dev Volunteer) was accepted!',time:'4 days ago'},
+      {msg:'New recruitment drive posted: Music Club — Vocalist / Instrumentalist.',time:'1 week ago'}
+    ]
+  };
+}
+let data = load() || seed();
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+if(!load()) save();
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function fmtDate(d){ return new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
+function daysLeft(d){ return Math.ceil((new Date(d+'T00:00:00') - new Date(new Date().toDateString()))/86400000); }
+function addNotif(msg){ data.notifications.unshift({msg,time:'just now'}); save(); renderBell(); }
+
+// ---------- Login screen ----------
+let loginRole='student';
+document.querySelectorAll('.role-pick button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.role-pick button').forEach(x=>x.classList.remove('selected'));
+  b.classList.add('selected'); loginRole=b.dataset.role;
+}));
+document.getElementById('loginBtn').addEventListener('click',()=>{
+  const name=document.getElementById('loginName').value.trim();
+  document.getElementById('studentName').value= name || (loginRole==='student'?'Sanika Deshmukh':'Guest Student');
+  document.getElementById('loginScreen').style.display='none';
+  document.querySelectorAll('#roleTabs button').forEach(b=>b.classList.toggle('active', b.dataset.role===loginRole));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+loginRole).classList.add('active');
+  refreshAll();
+});
+
+// ---------- Role tabs ----------
+document.getElementById('roleTabs').addEventListener('click',e=>{
+  const btn=e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#roleTabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+btn.dataset.role).classList.add('active');
+  if(btn.dataset.role==='coordinator') renderCoordinator();
+});
+
+// ---------- Bell ----------
+document.getElementById('bellBtn').addEventListener('click',()=>{
+  document.getElementById('bellPanel').classList.toggle('active');
+  document.getElementById('bellDot').style.display='none';
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.bellWrap')) document.getElementById('bellPanel').classList.remove('active');
+});
+function renderBell(){
+  document.getElementById('bellList').innerHTML = data.notifications.length? data.notifications.slice(0,8).map(n=>`
+    <div class="notif">${n.msg}<div class="t">${n.time}</div></div>`).join('') : `<div class="notif">No activity yet.</div>`;
+  document.getElementById('bellDot').style.display = data.notifications.length? 'block':'none';
+}
+
+// ---------- Student view ----------
+function studentName(){ return document.getElementById('studentName').value.trim() || 'Guest Student'; }
+function studentSkills(){ return document.getElementById('studentSkills').value.toLowerCase().split(',').map(s=>s.trim()).filter(Boolean); }
+
+function renderCategories(){
+  const cats=[...new Set(data.drives.map(d=>d.category))];
+  const sel=document.getElementById('filterCategory');
+  const current=sel.value;
+  sel.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=current;
+}
+
+function catClass(cat){ return 'cat-'+String(cat||'').toLowerCase().replace(/[^a-z]/g,''); }
+
+function driveCardHTML(d, small){
+  const dl=daysLeft(d.deadline);
+  const urgent = dl<=3;
+  return `
+    <div class="card club-card" onclick="openDetail('${d.id}')">
+      <span class="tag ${catClass(d.category)}">${d.category}</span>
+      <h3>${d.club}</h3>
+      <p style="font-weight:600;color:var(--ink)">${d.role}</p>
+      ${small?'':`<p>${d.desc}</p><div class="badge-row">${d.skills.map(s=>`<span class="tag" style="background:var(--paper);border:1px solid var(--line);color:var(--muted)">${s}</span>`).join('')}</div>`}
+      <div class="meta-row"><span class="deadline ${urgent?'urgent':''}">${dl<0?'Closed':dl===0?'Closes today':dl+' day'+(dl===1?'':'s')+' left'}</span>
+        <button class="primary small" onclick="event.stopPropagation();openApply('${d.id}')">Apply</button>
+      </div>
+    </div>`;
+}
+
+function renderRecs(){
+  const skills=studentSkills();
+  const strip=document.getElementById('recStrip');
+  const section=document.getElementById('recSection');
+  if(!skills.length){ section.style.display='none'; return; }
+  const matches=data.drives.filter(d=>d.skills.some(s=>skills.includes(s.toLowerCase())));
+  if(!matches.length){ section.style.display='none'; return; }
+  section.style.display='block';
+  strip.innerHTML=matches.map(d=>{
+    const hits=d.skills.filter(s=>skills.includes(s.toLowerCase())).length;
+    const pct=Math.round(100*hits/d.skills.length);
+    return `
+    <div class="rec-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <span class="tag ${catClass(d.category)}">${d.category}</span>
+        <span style="font-size:.72rem;font-weight:700;color:var(--moss-d)">${pct}% match</span>
+      </div>
+      <h3 style="font-size:1rem">${d.club}</h3>
+      <p style="font-size:.85rem;color:var(--muted);margin:.3em 0">${d.role}</p>
+      <button class="primary small" onclick="openDetail('${d.id}')">View</button>
+    </div>`}).join('');
+}
+
+function renderClubGrid(){
+  const q=document.getElementById('searchClubs').value.toLowerCase();
+  const cat=document.getElementById('filterCategory').value;
+  const grid=document.getElementById('clubGrid');
+  const list=data.drives.filter(d=>{
+    const hay=(d.club+' '+d.role+' '+d.skills.join(' ')).toLowerCase();
+    return (!q||hay.includes(q)) && (!cat||d.category===cat);
+  });
+  grid.innerHTML = list.length? list.map(d=>driveCardHTML(d,false)).join('') : `<div class="empty">No clubs match your search. Try a different keyword or clear the category filter.</div>`;
+}
+
+function openDetail(id){
+  const d=data.drives.find(x=>x.id===id);
+  const dl=daysLeft(d.deadline);
+  document.getElementById('detailModalBody').innerHTML=`
+    <span class="tag ${catClass(d.category)}">${d.category}</span>
+    <h3>${d.club} — ${d.role}</h3>
+    <p style="color:var(--muted)">${d.desc}</p>
+    <div class="detail-block"><h4>Eligibility</h4><p style="margin:0">${d.eligibility||'Open to all'}</p></div>
+    <div class="detail-block"><h4>Selection process</h4><p style="margin:0">${d.rounds||'To be announced'}</p></div>
+    <div class="detail-block"><h4>Skills wanted</h4><div class="badge-row">${d.skills.map(s=>`<span class="tag" style="background:var(--paper);border:1px solid var(--line);color:var(--muted)">${s}</span>`).join('')}</div></div>
+    <div class="detail-block"><h4>Coordinator contact</h4><p style="margin:0">${d.contact||'—'}</p></div>
+    <div class="meta-row" style="border-top:1px solid var(--line);padding-top:12px">
+      <span class="deadline ${dl<=3?'urgent':''}">${dl<0?'Closed':dl===0?'Closes today':dl+' day'+(dl===1?'':'s')+' left'}</span>
+      <div style="display:flex;gap:8px">
+        <button class="ghost" onclick="closeModal('detailModal')">Close</button>
+        <button class="primary" onclick="closeModal('detailModal');openApply('${d.id}')">Apply</button>
+      </div>
+    </div>`;
+  document.getElementById('detailModal').classList.add('active');
+}
+
+let applyDriveId=null;
+function openApply(id){
+  applyDriveId=id;
+  const d=data.drives.find(x=>x.id===id);
+  document.getElementById('applyModalTitle').textContent='Apply — '+d.club+' · '+d.role;
+  document.getElementById('applyMsg').value='';
+  document.getElementById('applySkills').value=document.getElementById('studentSkills').value;
+  document.getElementById('applyModal').classList.add('active');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+document.getElementById('submitApplyBtn').addEventListener('click',()=>{
+  const d=data.drives.find(x=>x.id===applyDriveId);
+  const name=studentName();
+  if(data.applications.some(a=>a.driveId===d.id && a.student===name)){
+    alert('You already applied to this drive.'); closeModal('applyModal'); return;
+  }
+  data.applications.push({
+    id:uid(), driveId:d.id, club:d.club, role:d.role, student:name,
+    message:document.getElementById('applyMsg').value.trim(),
+    skills:document.getElementById('applySkills').value.trim(),
+    status:'pending', appliedOn:new Date().toISOString().slice(0,10)
+  });
+  addNotif(`You applied to ${d.club} — ${d.role}.`);
+  save(); closeModal('applyModal'); renderMyApps(); renderCoordinator();
+});
+
+function renderMyApps(){
+  const name=studentName();
+  const mine=data.applications.filter(a=>a.student===name);
+  const box=document.getElementById('myApps');
+  box.innerHTML = mine.length? mine.map(a=>`
+    <div class="app-row">
+      <div><strong>${a.club}</strong> — ${a.role}<div style="font-size:.78rem;color:var(--muted)">Applied ${fmtDate(a.appliedOn)}</div></div>
+      <span class="status-pill status-${a.status}">${a.status}</span>
+    </div>`).join('') : `<div class="empty">No applications yet — enter your name above and apply to a club.</div>`;
+}
+
+['searchClubs'].forEach(id=>document.getElementById(id).addEventListener('input',renderClubGrid));
+document.getElementById('filterCategory').addEventListener('change',renderClubGrid);
+document.getElementById('studentName').addEventListener('input',renderMyApps);
+document.getElementById('studentSkills').addEventListener('input',renderRecs);
+
+// ---------- Coordinator view ----------
+function coordClubs(){ return [...new Set(data.drives.map(d=>d.club))]; }
+function renderCoordSelect(){
+  const sel=document.getElementById('coordClubSelect');
+  const current=sel.value;
+  sel.innerHTML=coordClubs().map(c=>`<option value="${c}">${c}</option>`).join('');
+  if(current && coordClubs().includes(current)) sel.value=current;
+  document.getElementById('coordClubLabel').textContent=sel.value||'—';
+}
+document.getElementById('coordClubSelect').addEventListener('change',renderCoordinator);
+
+function renderCoordinator(){
+  renderCoordSelect();
+  const club=document.getElementById('coordClubSelect').value;
+  document.getElementById('coordClubLabel').textContent=club||'—';
+
+  const drives=data.drives.filter(d=>d.club===club);
+  const apps=data.applications.filter(a=>a.club===club);
+  const shortlisted=apps.filter(a=>a.status==='shortlisted'||a.status==='accepted').length;
+  const closingSoon=drives.filter(d=>daysLeft(d.deadline)<=3 && daysLeft(d.deadline)>=0).length;
+  const pct = apps.length? Math.round(100*shortlisted/apps.length) : 0;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat"><div class="num">${apps.length}</div><div class="lbl">Total applicants</div></div>
+    <div class="stat"><div class="num">${pct}%</div><div class="lbl">Shortlisted or accepted</div></div>
+    <div class="stat"><div class="num">${drives.length}</div><div class="lbl">Active drives</div></div>
+    <div class="stat"><div class="num">${closingSoon}</div><div class="lbl">Closing within 3 days</div></div>`;
+
+  document.getElementById('coordDrives').innerHTML = drives.length? drives.map(d=>{
+    const dl=daysLeft(d.deadline);
+    return `<div class="app-row">
+      <div><strong>${d.role}</strong><div style="font-size:.78rem;color:var(--muted)">${d.category} · <span class="${dl<=3?'urgent':''}">${dl<0?'Closed':dl+' day(s) left'}</span> · ${data.applications.filter(a=>a.driveId===d.id).length} applicant(s)</div></div>
+      <button class="ghost small" onclick="deleteDrive('${d.id}')">Close drive</button>
+    </div>`}).join('') : `<div class="empty">No active drives for this club yet — post one to start receiving applications.</div>`;
+
+  document.getElementById('coordApplicants').innerHTML = apps.length? apps.map(a=>`
+    <div class="app-row">
+      <div><strong>${a.student}</strong> — ${a.role}
+        <div style="font-size:.78rem;color:var(--muted)">${a.message?('"'+a.message+'"'):'No message'} ${a.skills?(' · Skills: '+a.skills):''}</div>
+      </div>
+      <select class="chip" style="width:auto" onchange="setStatus('${a.id}',this.value)">
+        ${['pending','shortlisted','accepted','rejected'].map(s=>`<option value="${s}" ${a.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>`).join('') : `<div class="empty">No applicants yet — share your drive with students to start seeing applications.</div>`;
+}
+function setStatus(id,status){
+  const a=data.applications.find(x=>x.id===id); a.status=status; save();
+  addNotif(`Your application to ${a.club} (${a.role}) was marked ${status}.`);
+  renderCoordinator(); renderMyApps();
+}
+function deleteDrive(id){
+  if(!confirm('Close this drive? Its applications stay on record.')) return;
+  data.drives=data.drives.filter(d=>d.id!==id); save(); renderCoordinator(); renderClubGrid(); renderCategories();
+}
+
+document.getElementById('newDriveBtn').addEventListener('click',()=>{
+  const club=document.getElementById('coordClubSelect').value;
+  ['driveCategory','driveRole','driveDesc','driveEligibility','driveRounds','driveSkills','driveContact','driveDeadline'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('driveClub').value=club||'';
+  document.getElementById('driveModal').classList.add('active');
+});
+document.getElementById('saveDriveBtn').addEventListener('click',()=>{
+  const club=document.getElementById('driveClub').value.trim();
+  const role=document.getElementById('driveRole').value.trim();
+  if(!club||!role){ alert('Club name and role are required.'); return; }
+  data.drives.push({
+    id:uid(), club, category:document.getElementById('driveCategory').value.trim()||'General',
+    role, desc:document.getElementById('driveDesc').value.trim(),
+    eligibility:document.getElementById('driveEligibility').value.trim(),
+    rounds:document.getElementById('driveRounds').value.trim(),
+    contact:document.getElementById('driveContact').value.trim(),
+    skills:document.getElementById('driveSkills').value.split(',').map(s=>s.trim()).filter(Boolean),
+    deadline:document.getElementById('driveDeadline').value||new Date().toISOString().slice(0,10)
+  });
+  addNotif(`New recruitment drive posted: ${club} — ${role}.`);
+  save(); closeModal('driveModal'); renderCoordinator(); renderClubGrid(); renderCategories();
+});
+
+function refreshAll(){
+  renderCategories(); renderClubGrid(); renderMyApps(); renderRecs(); renderCoordSelect(); renderBell();
+}
+refreshAll();
+</script>
+</body>
+</html>
