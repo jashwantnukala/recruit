@@ -219,10 +219,7 @@ select.chip{width:auto}
       <button data-role="student" class="active">Student</button>
       <button data-role="coordinator">Coordinator</button>
     </div>
-    <div class="bellWrap">
-      <button class="bellBtn" id="bellBtn">🔔<span class="bellDot" id="bellDot"></span></button>
-      <div class="bellPanel" id="bellPanel"><h4>Activity</h4><div id="bellList"></div></div>
-    </div>
+    <button class="bellBtn" id="profileBtn" title="Your profile" style="display:none">👤</button>
   </div>
 </header>
 
@@ -234,8 +231,6 @@ select.chip{width:auto}
       <p>Explore recruitment drives across MMCOE's clubs, and apply in a couple of clicks.</p>
     </div>
     <div class="toolbar" style="margin-top:6px">
-      <input type="text" id="studentName" placeholder="Your name (for applications)" style="max-width:220px">
-      <input type="text" id="studentSkills" placeholder="Your skills (comma separated)" style="max-width:240px">
       <input type="text" id="searchClubs" placeholder="Search clubs by name or skill…">
       <select id="filterCategory" class="chip"><option value="">All categories</option></select>
     </div>
@@ -279,6 +274,24 @@ select.chip{width:auto}
 <!-- Club Detail Modal -->
 <div class="modal-bg" id="detailModal">
   <div class="modal" id="detailModalBody"></div>
+</div>
+
+<!-- Student Profile Modal -->
+<div class="modal-bg" id="profileModal">
+  <div class="modal">
+    <h3>Your profile</h3>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:-6px">Set this once — it's used on all your applications and recommendations.</p>
+    <div class="field"><label>Your name</label><input type="text" id="studentName" placeholder="e.g. Sanika Deshmukh"></div>
+    <div class="field"><label>Your skills (comma separated)</label><input type="text" id="studentSkills" placeholder="e.g. Photoshop, Public speaking"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="primary" onclick="closeModal('profileModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Applicant Review Modal -->
+<div class="modal-bg" id="applicantModal">
+  <div class="modal" id="applicantModalBody"></div>
 </div>
 
 <!-- Apply Modal -->
@@ -335,11 +348,6 @@ function seed(){
       {id:'a5',driveId:'d3',club:'Dramatics Society',role:'Stage Performer',student:'Ishaan Pillai',message:'Been part of my school drama club for 3 years.',skills:'Acting, Mimicry',status:'rejected',appliedOn:'2026-09-10'},
       {id:'a6',driveId:'d4',club:'Entrepreneurship Cell',role:'Content & Outreach',student:'Meera Joshi',message:'Run a small Instagram page on campus startups already.',skills:'Copywriting, Canva',status:'shortlisted',appliedOn:'2026-09-19'},
       {id:'a7',driveId:'d6',club:'Music Club',role:'Vocalist / Instrumentalist',student:'Kabir Singh',message:'Play the guitar, performed at last year\'s cultural night.',skills:'Guitar, Vocals',status:'pending',appliedOn:'2026-09-23'}
-    ],
-    notifications:[
-      {msg:'Your application to Photography Club was shortlisted.',time:'2 days ago'},
-      {msg:'Your application to Coding Club (Web Dev Volunteer) was accepted!',time:'4 days ago'},
-      {msg:'New recruitment drive posted: Music Club — Vocalist / Instrumentalist.',time:'1 week ago'}
     ]
   };
 }
@@ -350,7 +358,6 @@ if(!load()) save();
 function uid(){ return Math.random().toString(36).slice(2,9); }
 function fmtDate(d){ return new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
 function daysLeft(d){ return Math.ceil((new Date(d+'T00:00:00') - new Date(new Date().toDateString()))/86400000); }
-function addNotif(msg){ data.notifications.unshift({msg,time:'just now'}); save(); renderBell(); }
 
 // ---------- Login screen ----------
 let loginRole='student';
@@ -365,6 +372,7 @@ document.getElementById('loginBtn').addEventListener('click',()=>{
   document.querySelectorAll('#roleTabs button').forEach(b=>b.classList.toggle('active', b.dataset.role===loginRole));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+loginRole).classList.add('active');
+  document.getElementById('profileBtn').style.display = loginRole==='student' ? '' : 'none';
   refreshAll();
 });
 
@@ -375,22 +383,14 @@ document.getElementById('roleTabs').addEventListener('click',e=>{
   btn.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+btn.dataset.role).classList.add('active');
+  document.getElementById('profileBtn').style.display = btn.dataset.role==='student' ? '' : 'none';
   if(btn.dataset.role==='coordinator') renderCoordinator();
 });
 
-// ---------- Bell ----------
-document.getElementById('bellBtn').addEventListener('click',()=>{
-  document.getElementById('bellPanel').classList.toggle('active');
-  document.getElementById('bellDot').style.display='none';
+// ---------- Profile ----------
+document.getElementById('profileBtn').addEventListener('click',()=>{
+  document.getElementById('profileModal').classList.add('active');
 });
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.bellWrap')) document.getElementById('bellPanel').classList.remove('active');
-});
-function renderBell(){
-  document.getElementById('bellList').innerHTML = data.notifications.length? data.notifications.slice(0,8).map(n=>`
-    <div class="notif">${n.msg}<div class="t">${n.time}</div></div>`).join('') : `<div class="notif">No activity yet.</div>`;
-  document.getElementById('bellDot').style.display = data.notifications.length? 'block':'none';
-}
 
 // ---------- Student view ----------
 function studentName(){ return document.getElementById('studentName').value.trim() || 'Guest Student'; }
@@ -499,7 +499,6 @@ document.getElementById('submitApplyBtn').addEventListener('click',()=>{
     skills:document.getElementById('applySkills').value.trim(),
     status:'pending', appliedOn:new Date().toISOString().slice(0,10)
   });
-  addNotif(`You applied to ${d.club} — ${d.role}.`);
   save(); closeModal('applyModal'); renderMyApps(); renderCoordinator();
 });
 
@@ -554,18 +553,37 @@ function renderCoordinator(){
     </div>`}).join('') : `<div class="empty">No active drives for this club yet — post one to start receiving applications.</div>`;
 
   document.getElementById('coordApplicants').innerHTML = apps.length? apps.map(a=>`
-    <div class="app-row">
+    <div class="app-row" style="cursor:pointer" onclick="openApplicant('${a.id}')">
       <div><strong>${a.student}</strong> — ${a.role}
-        <div style="font-size:.78rem;color:var(--muted)">${a.message?('"'+a.message+'"'):'No message'} ${a.skills?(' · Skills: '+a.skills):''}</div>
+        <div style="font-size:.78rem;color:var(--muted)">${a.skills?('Skills: '+a.skills):'No skills listed'}</div>
       </div>
-      <select class="chip" style="width:auto" onchange="setStatus('${a.id}',this.value)">
-        ${['pending','shortlisted','accepted','rejected'].map(s=>`<option value="${s}" ${a.status===s?'selected':''}>${s}</option>`).join('')}
-      </select>
+      <span class="status-pill status-${a.status}">${a.status}</span>
     </div>`).join('') : `<div class="empty">No applicants yet — share your drive with students to start seeing applications.</div>`;
+}
+function openApplicant(id){
+  const a=data.applications.find(x=>x.id===id);
+  const initials=a.student.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+  const statuses=['pending','shortlisted','accepted','rejected'];
+  document.getElementById('applicantModalBody').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(155deg,var(--moss),var(--moss-d));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Fraunces',serif;flex:none">${initials}</div>
+      <div><h3 style="margin-bottom:0">${a.student}</h3><div style="font-size:.82rem;color:var(--muted)">${a.role} · ${a.club}</div></div>
+    </div>
+    <div class="detail-block"><h4>Why they want to join</h4><p style="margin:0">${a.message||'No message provided.'}</p></div>
+    <div class="detail-block"><h4>Skills</h4>${a.skills?`<div class="badge-row">${a.skills.split(',').map(s=>s.trim()).filter(Boolean).map(s=>`<span class="tag">${s}</span>`).join('')}</div>`:'<p style="margin:0;color:var(--muted)">None listed</p>'}</div>
+    <div class="detail-block"><h4>Applied on</h4><p style="margin:0">${fmtDate(a.appliedOn)}</p></div>
+    <div class="detail-block"><h4>Decision</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${statuses.map(s=>`<button class="${a.status===s?'primary':'ghost'} small" onclick="setStatus('${a.id}','${s}');openApplicant('${a.id}')">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px">
+      <button class="ghost" onclick="closeModal('applicantModal')">Close</button>
+    </div>`;
+  document.getElementById('applicantModal').classList.add('active');
 }
 function setStatus(id,status){
   const a=data.applications.find(x=>x.id===id); a.status=status; save();
-  addNotif(`Your application to ${a.club} (${a.role}) was marked ${status}.`);
   renderCoordinator(); renderMyApps();
 }
 function deleteDrive(id){
@@ -592,12 +610,11 @@ document.getElementById('saveDriveBtn').addEventListener('click',()=>{
     skills:document.getElementById('driveSkills').value.split(',').map(s=>s.trim()).filter(Boolean),
     deadline:document.getElementById('driveDeadline').value||new Date().toISOString().slice(0,10)
   });
-  addNotif(`New recruitment drive posted: ${club} — ${role}.`);
   save(); closeModal('driveModal'); renderCoordinator(); renderClubGrid(); renderCategories();
 });
 
 function refreshAll(){
-  renderCategories(); renderClubGrid(); renderMyApps(); renderRecs(); renderCoordSelect(); renderBell();
+  renderCategories(); renderClubGrid(); renderMyApps(); renderRecs(); renderCoordSelect();
 }
 refreshAll();
 </script>
